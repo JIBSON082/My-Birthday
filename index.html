@@ -67,28 +67,15 @@
     top: 0; left: 0; right: 0;
     z-index: 100;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 28px 5vw;
-    mix-blend-mode: difference;
   }
   .nav-mark{
     font-family: 'Anton', sans-serif;
     font-size: 1.4rem;
     letter-spacing: 0.05em;
-    color: var(--gold);
-    animation: pulse-glow 3.2s ease-in-out infinite;
-  }
-  @keyframes pulse-glow{
-    0%, 100%{ text-shadow: 0 0 6px rgba(212,175,55,0.35), 0 0 14px rgba(212,175,55,0.15); }
-    50%{ text-shadow: 0 0 14px rgba(212,175,55,0.75), 0 0 28px rgba(212,175,55,0.4); }
-  }
-  .nav-tag{
-    font-size: 0.68rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--ink);
-    opacity: 0.7;
+    color: #000000;
   }
 
   /* hero */
@@ -206,43 +193,35 @@
   .download-all:disabled{ opacity: 0.6; cursor: progress; }
 
   .masonry{
-    column-count: 2;
-    column-gap: 18px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
   @media (min-width: 860px){
-    .masonry{ column-count: 3; column-gap: 22px; }
+    .masonry{ grid-template-columns: repeat(3, 1fr); gap: 18px; }
   }
   .frame{
     position: relative;
-    break-inside: avoid;
-    margin-bottom: 18px;
     overflow: hidden;
     border-radius: 2px;
-    opacity: 0;
-    transform: translateY(46px) scale(0.97);
-    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
     cursor: pointer;
-  }
-  .frame.in-view{
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    aspect-ratio: 3 / 4;
   }
   .frame img{
     display: block;
     width: 100%;
-    height: auto;
-    transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    height: 100%;
+    object-fit: cover;
   }
-  .frame:hover img{ transform: scale(1.06); }
   .frame-veil{
     position: absolute;
     inset: 0;
-    background: rgba(10,10,10,0.45);
+    background: rgba(10,10,10,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.25s ease;
   }
   .frame:hover .frame-veil{ opacity: 1; }
   .frame-veil span{
@@ -328,7 +307,6 @@
 
 <nav class="nav">
   <div class="nav-mark">DAVE</div>
-  <div class="nav-tag">Est. Today</div>
 </nav>
 
 <section class="hero">
@@ -383,7 +361,6 @@
   images.forEach((src, i) => {
     const frame = document.createElement('div');
     frame.className = 'frame';
-    frame.style.transitionDelay = (i % 3) * 0.08 + 's';
     frame.dataset.src = src;
     frame.innerHTML = `
       <img src="${src}" alt="Photo ${i + 1}" loading="lazy">
@@ -392,17 +369,6 @@
     frame.addEventListener('click', () => openLightbox(src, i));
     masonry.appendChild(frame);
   });
-
-  // scroll-triggered reveal
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting){
-        entry.target.classList.add('in-view');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.frame').forEach(f => io.observe(f));
 
   // parallax + hero fade
   const heroBg = document.getElementById('heroBg');
@@ -481,4 +447,3 @@
 
 </body>
 </html>
-
