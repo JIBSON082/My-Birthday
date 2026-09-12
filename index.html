@@ -1,1 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAVE — The Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0a0a;
+    --ink: #f4f1ea;
+    --gold: #d4af37;
+    --gold-soft: rgba(212,175,55,0.35);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{
+    scroll-behavior: smooth;
+  }
+
+  html, body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar, html::-webkit-scrollbar{ display:none; }
+
+  ::selection{ background: var(--gold-soft); color: var(--bg); }
+
+  a{ color: inherit; text-decoration: none; }
+  button{ font-family: inherit; cursor: pointer; }
+
+  /* film grain overlay */
+  .grain{
+    position: fixed;
+    inset: -100px;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain-shift 8s steps(8) infinite;
+  }
+  @keyframes grain-shift{
+    0%{ transform: translate(0,0); }
+    10%{ transform: translate(-2%,-4%); }
+    20%{ transform: translate(-6%,2%); }
+    30%{ transform: translate(4%,-2%); }
+    40%{ transform: translate(-2%,6%); }
+    50%{ transform: translate(-8%,1%); }
+    60%{ transform: translate(6%,4%); }
+    70%{ transform: translate(0,-6%); }
+    80%{ transform: translate(-4%,3%); }
+    90%{ transform: translate(3%,-3%); }
+    100%{ transform: translate(0,0); }
+  }
+
+  /* nav */
+  .nav{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 5vw;
+    mix-blend-mode: difference;
+  }
+  .nav-mark{
+    font-family: 'Anton', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+    animation: pulse-glow 3.2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow{
+    0%, 100%{ text-shadow: 0 0 6px rgba(212,175,55,0.35), 0 0 14px rgba(212,175,55,0.15); }
+    50%{ text-shadow: 0 0 14px rgba(212,175,55,0.75), 0 0 28px rgba(212,175,55,0.4); }
+  }
+  .nav-tag{
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.7;
+  }
+
+  /* hero */
+  .hero{
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-bg{
+    position: absolute;
+    inset: -6vh -6vw;
+    background-image: url("https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto,e_blur:200/v1789228439/IMG_8064_iyqyn2");
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    transform: translateY(0);
+  }
+  .hero-scrim{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(10,10,10,0) 0%, rgba(10,10,10,0.55) 55%, rgba(10,10,10,0.97) 100%);
+  }
+  .hero-content{
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    will-change: transform, opacity;
+  }
+  .hero-title{
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: clamp(4.5rem, 15vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+  .hero-sub{
+    margin-top: 18px;
+    font-size: clamp(0.85rem, 1.6vw, 1.1rem);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(212,175,55,0.5);
+  }
+  .scroll-cue{
+    position: absolute;
+    bottom: 42px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.75;
+  }
+  .scroll-cue span{
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .scroll-cue .line{
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: cue-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes cue-pulse{
+    0%,100%{ opacity: 0.25; transform: scaleY(0.6); }
+    50%{ opacity: 1; transform: scaleY(1); }
+  }
+
+  /* gallery */
+  .gallery{
+    position: relative;
+    z-index: 2;
+    background: var(--bg);
+    padding: 110px 5vw 140px;
+  }
+  .gallery-head{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+  .gallery-head h2{
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    letter-spacing: 0.01em;
+  }
+  .download-all{
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 14px 30px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 8px rgba(212,175,55,0.4);
+    transition: background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+    white-space: nowrap;
+  }
+  .download-all:hover{
+    background: rgba(212,175,55,0.14);
+    box-shadow: 0 0 24px rgba(212,175,55,0.25);
+  }
+  .download-all:disabled{ opacity: 0.6; cursor: progress; }
+
+  .masonry{
+    column-count: 2;
+    column-gap: 18px;
+  }
+  @media (min-width: 860px){
+    .masonry{ column-count: 3; column-gap: 22px; }
+  }
+  .frame{
+    position: relative;
+    break-inside: avoid;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border-radius: 2px;
+    opacity: 0;
+    transform: translateY(46px) scale(0.97);
+    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    cursor: pointer;
+  }
+  .frame.in-view{
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .frame img{
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  .frame:hover img{ transform: scale(1.06); }
+  .frame-veil{
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .frame:hover .frame-veil{ opacity: 1; }
+  .frame-veil span{
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border: 1px solid var(--gold);
+    padding: 10px 22px;
+    border-radius: 999px;
+  }
+
+  /* lightbox */
+  .lightbox{
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(6,6,6,0.97);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    padding: 6vh 5vw;
+  }
+  .lightbox.open{ opacity: 1; pointer-events: auto; }
+  .lightbox img{
+    max-width: min(92vw, 900px);
+    max-height: 68vh;
+    object-fit: contain;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  }
+  .lightbox-actions{
+    margin-top: 30px;
+    display: flex;
+    gap: 22px;
+    align-items: center;
+  }
+  .lb-close{
+    font-size: 0.78rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+  .lb-close:hover{ opacity: 1; }
+  .lb-download{
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: background 0.3s ease;
+  }
+  .lb-download:hover{ background: rgba(212,175,55,0.14); }
+
+  /* footer */
+  .foot{
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px 5vw 60px;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(244,241,234,0.4);
+    background: var(--bg);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="nav">
+  <div class="nav-mark">DAVE</div>
+  <div class="nav-tag">Est. Today</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-scrim"></div>
+  <div class="hero-content" id="heroContent">
+    <h1 class="hero-title">DAVE</h1>
+    <div class="hero-sub">The Gallery</div>
+  </div>
+  <div class="scroll-cue">
+    <span>Scroll</span>
+    <div class="line"></div>
+  </div>
+</section>
+
+<section class="gallery">
+  <div class="gallery-head">
+    <h2>The Moments</h2>
+    <button class="download-all" id="downloadAllBtn">Download All</button>
+  </div>
+  <div class="masonry" id="masonry"></div>
+</section>
+
+<footer class="foot">David Ajibua &mdash; captured, kept, celebrated</footer>
+
+<div class="lightbox" id="lightbox">
+  <img src="" alt="" id="lightboxImg">
+  <div class="lightbox-actions">
+    <button class="lb-close" id="lbClose">Close</button>
+    <button class="lb-download" id="lbDownload">Download</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script>
+(function(){
+  const images = [
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228443/IMG_8045_hzyzsc",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228437/IMG_8047_uav0vv",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228450/IMG_8041_ueaxkk",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228438/IMG_8030_iqbj5t",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228437/IMG_8028_dh4iqr",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228439/IMG_8064_iyqyn2",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228438/IMG_8026_sgnunr",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228440/IMG_8033_nsdn5b",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228440/IMG_8050_ekqlng",
+    "https://res.cloudinary.com/dx3k7hbnc/image/upload/f_auto,q_auto/v1789228440/IMG_8054_bvbtwe"
+  ];
+
+  const masonry = document.getElementById('masonry');
+  images.forEach((src, i) => {
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    frame.style.transitionDelay = (i % 3) * 0.08 + 's';
+    frame.dataset.src = src;
+    frame.innerHTML = `
+      <img src="${src}" alt="Photo ${i + 1}" loading="lazy">
+      <div class="frame-veil"><span>View</span></div>
+    `;
+    frame.addEventListener('click', () => openLightbox(src, i));
+    masonry.appendChild(frame);
+  });
+
+  // scroll-triggered reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.frame').forEach(f => io.observe(f));
+
+  // parallax + hero fade
+  const heroBg = document.getElementById('heroBg');
+  const heroContent = document.getElementById('heroContent');
+  const heroHeight = window.innerHeight;
+  function onScroll(){
+    const y = window.scrollY;
+    const p = Math.min(y / heroHeight, 1);
+    heroBg.style.transform = `translateY(${y * 0.35}px)`;
+    heroContent.style.transform = `translateY(${-y * 0.25}px)`;
+    heroContent.style.opacity = String(1 - p * 1.15);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // lightbox
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lbClose = document.getElementById('lbClose');
+  const lbDownload = document.getElementById('lbDownload');
+  let currentSrc = '';
+  let currentIndex = 0;
+
+  function openLightbox(src, idx){
+    currentSrc = src;
+    currentIndex = idx;
+    lightboxImg.src = src;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  lbClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+  async function downloadImage(src, filename){
+    const res = await fetch(src);
+    const blob = await res.blob();
+    saveAs(blob, filename);
+  }
+
+  lbDownload.addEventListener('click', () => {
+    downloadImage(currentSrc, `DAVE_${currentIndex + 1}.jpg`);
+  });
+
+  // download all as zip
+  const downloadAllBtn = document.getElementById('downloadAllBtn');
+  downloadAllBtn.addEventListener('click', async () => {
+    downloadAllBtn.disabled = true;
+    const original = downloadAllBtn.textContent;
+    downloadAllBtn.textContent = 'Zipping…';
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder('DAVE_gallery');
+      await Promise.all(images.map(async (src, i) => {
+        const res = await fetch(src);
+        const blob = await res.blob();
+        folder.file(`DAVE_${i + 1}.jpg`, blob);
+      }));
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, 'DAVE_gallery.zip');
+    } catch (err) {
+      console.error(err);
+      downloadAllBtn.textContent = 'Failed — retry';
+      setTimeout(() => { downloadAllBtn.textContent = original; downloadAllBtn.disabled = false; }, 1800);
+      return;
+    }
+    downloadAllBtn.textContent = original;
+    downloadAllBtn.disabled = false;
+  });
+})();
+</script>
+
+</body>
+</html>
 
